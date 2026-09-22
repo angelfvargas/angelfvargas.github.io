@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ángel Farid Agreda Vargas — Portafolio</title>
+<meta name="description" content="Estudiante de Ingeniería de Sistemas en Cali. Backend, datos e IA aplicada.">
+<style>
+  :root{
+    --bg:#0b0f14;
+    --bg-soft:#111823;
+    --card:#151d29;
+    --border:#22303f;
+    --text:#e7edf3;
+    --muted:#9fb0c3;
+    --accent:#5fd0a3;
+    --accent-2:#7aa2f7;
+    --radius:14px;
+    --maxw:880px;
+  }
+  @media (prefers-color-scheme: light){
+    :root{
+      --bg:#f6f8fa;
+      --bg-soft:#ffffff;
+      --card:#ffffff;
+      --border:#e2e8f0;
+      --text:#0f172a;
+      --muted:#54637a;
+      --accent:#0e9f6e;
+      --accent-2:#3b5fe2;
+    }
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.6;
+  }
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+
+  header.hero{
+    padding:72px 0 40px;
+    border-bottom:1px solid var(--border);
+  }
+  .avatar-ring{
+    display:inline-block;
+    width:14px;height:14px;
+    border-radius:50%;
+    background:var(--accent);
+    margin-right:10px;
+    box-shadow:0 0 0 4px color-mix(in srgb, var(--accent) 20%, transparent);
+  }
+  .eyebrow{
+    color:var(--muted);
+    font-size:14px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    display:flex;
+    align-items:center;
+    margin-bottom:14px;
+  }
+  h1{
+    font-size:clamp(28px,5vw,42px);
+    margin:0 0 12px;
+    letter-spacing:-0.02em;
+  }
+  .lede{
+    color:var(--muted);
+    font-size:18px;
+    max-width:640px;
+    margin:0 0 28px;
+  }
+  .lede strong{color:var(--text)}
+
+  .links{display:flex;flex-wrap:wrap;gap:12px}
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:10px 18px;
+    border-radius:999px;
+    border:1px solid var(--border);
+    color:var(--text);
+    text-decoration:none;
+    font-size:14px;
+    font-weight:600;
+    transition:transform .15s ease, border-color .15s ease;
+    background:var(--bg-soft);
+  }
+  .btn:hover{transform:translateY(-2px);border-color:var(--accent)}
+  .btn.primary{
+    background:var(--accent);
+    color:#04140d;
+    border-color:transparent;
+  }
+  .btn.primary:hover{border-color:transparent}
+
+  section{padding:48px 0}
+  section h2{
+    font-size:13px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    color:var(--muted);
+    margin:0 0 24px;
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:16px;
+  }
+  @media (max-width:640px){ .grid{grid-template-columns:1fr} }
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:20px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    text-decoration:none;
+    color:var(--text);
+    transition:border-color .15s ease, transform .15s ease;
+  }
+  .card:hover{border-color:var(--accent-2);transform:translateY(-2px)}
+  .card h3{margin:0;font-size:17px}
+  .card p{margin:0;color:var(--muted);font-size:14.5px}
+  .card .tag{
+    align-self:flex-start;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:.04em;
+    text-transform:uppercase;
+    color:var(--accent-2);
+    background:color-mix(in srgb, var(--accent-2) 14%, transparent);
+    padding:3px 9px;
+    border-radius:999px;
+  }
+  .card .repo-link{
+    margin-top:auto;
+    font-size:13px;
+    color:var(--accent);
+    font-weight:600;
+  }
+
+  .featured{
+    grid-column:1 / -1;
+    border-color:var(--accent);
+  }
+  .featured .tag{color:var(--accent);background:color-mix(in srgb, var(--accent) 16%, transparent)}
+
+  .skills{display:flex;flex-wrap:wrap;gap:8px}
+  .pill{
+    font-size:13px;
+    padding:6px 12px;
+    border-radius:999px;
+    border:1px solid var(--border);
+    color:var(--muted);
+    background:var(--bg-soft);
+  }
+  .skills-group{margin-bottom:16px}
+  .skills-group .label{font-size:13px;color:var(--muted);margin-bottom:8px;display:block}
+
+  .edu-item{
+    display:flex;
+    justify-content:space-between;
+    gap:16px;
+    padding:14px 0;
+    border-bottom:1px solid var(--border);
+  }
+  .edu-item:last-child{border-bottom:none}
+  .edu-item .what{font-weight:600}
+  .edu-item .when{color:var(--muted);font-size:13.5px;white-space:nowrap}
+
+  footer{
+    padding:40px 0 72px;
+    border-top:1px solid var(--border);
+    color:var(--muted);
+    font-size:14px;
+  }
+  footer a{color:var(--accent-2)}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="hero">
+    <div class="eyebrow"><span class="avatar-ring"></span>Disponible para práctica · Cali o remoto</div>
+    <h1>Ángel Farid Agreda Vargas</h1>
+    <p class="lede">
+      Estudiante de 8° semestre de <strong>Ingeniería de Sistemas</strong> (Universidad Libre, Cali).
+      Construyo proyectos completos —backend, datos, IA aplicada— para aprender resolviendo
+      problemas reales, no solo tutoriales.
+    </p>
+    <div class="links">
+      <a class="btn primary" href="mailto:angelf-agredav@unilibre.edu.co">Escribirme</a>
+      <a class="btn" href="https://github.com/angelfvargas" target="_blank" rel="noopener">GitHub</a>
+      <a class="btn" href="https://www.linkedin.com/in/angel-farid-agreda-vargas-9a681b201" target="_blank" rel="noopener">LinkedIn</a>
+    </div>
+  </header>
+
+  <section id="proyectos">
+    <h2>Proyectos</h2>
+    <div class="grid">
+
+      <a class="card featured" href="https://github.com/angelfvargas/techlab" target="_blank" rel="noopener">
+        <span class="tag">Destacado</span>
+        <h3>Tech Lab</h3>
+        <p>Laboratorio de innovación que corre completo en un computador, sin nube: auditoría de
+          góndola con dos modelos de visión combinados, OCR local de documentos, radar de
+          tendencias en IA, y bitácora/tablero que se generan solos. Límites conocidos, medidos
+          y documentados sin maquillar.</p>
+        <span class="repo-link">Ver repositorio →</span>
+      </a>
+
+      <a class="card" href="https://github.com/angelfvargas/talentpilot-ai" target="_blank" rel="noopener">
+        <span class="tag">IA aplicada</span>
+        <h3>TalentPilot AI</h3>
+        <p>Compara un CV contra una oferta de empleo real y dice qué ajustar antes de postular.
+          Python puro, sin dependencias.</p>
+        <span class="repo-link">Ver repositorio →</span>
+      </a>
+
+      <a class="card" href="https://github.com/angelfvargas/ats-practicas" target="_blank" rel="noopener">
+        <span class="tag">Backend</span>
+        <h3>ATS Prácticas</h3>
+        <p>API REST en FastAPI + SQLite para seguir postulaciones de práctica: vacantes, empresas,
+          historial de estados y puntaje automático. 71 pruebas.</p>
+        <span class="repo-link">Ver repositorio →</span>
+      </a>
+
+      <a class="card" href="https://github.com/angelfvargas/mercado-energia-xm" target="_blank" rel="noopener">
+        <span class="tag">Datos</span>
+        <h3>Mercado Energía XM</h3>
+        <p>Análisis del mercado eléctrico colombiano con datos públicos de XM: precio de bolsa,
+          contratos, hidrología y posición contractual.</p>
+        <span class="repo-link">Ver repositorio →</span>
+      </a>
+
+      <a class="card" href="https://github.com/angelfvargas/conectividad-co" target="_blank" rel="noopener">
+        <span class="tag">Datos</span>
+        <h3>Conectividad CO</h3>
+        <p>Descarga, analiza y exporta los datos de internet fijo en Colombia desde la API de
+          datos.gov.co (MinTIC). Sin dependencias.</p>
+        <span class="repo-link">Ver repositorio →</span>
+      </a>
+
+      <a class="card" href="https://github.com/angelfvargas/sesenta" target="_blank" rel="noopener">
+        <span class="tag">Infraestructura</span>
+        <h3>Sesenta</h3>
+        <p>Diagnóstico de un servidor Linux en un solo comando: sistema, almacenamiento, red y
+          servicios, evaluados con el método USE hasta concluir una causa.</p>
+        <span class="repo-link">Ver repositorio →</span>
+      </a>
+
+    </div>
+  </section>
+
+  <section id="stack">
+    <h2>Stack</h2>
+    <div class="skills-group">
+      <span class="label">En uso, en producción propia</span>
+      <div class="skills">
+        <span class="pill">Python</span>
+        <span class="pill">SQL</span>
+        <span class="pill">Git / GitHub</span>
+        <span class="pill">Linux</span>
+      </div>
+    </div>
+    <div class="skills-group">
+      <span class="label">Inteligencia artificial</span>
+      <div class="skills">
+        <span class="pill">TensorFlow / Keras</span>
+        <span class="pill">CNN</span>
+        <span class="pill">Fundamentos de LLM</span>
+      </div>
+    </div>
+    <div class="skills-group">
+      <span class="label">En profundización</span>
+      <div class="skills">
+        <span class="pill">React</span>
+        <span class="pill">TypeScript</span>
+        <span class="pill">FastAPI</span>
+        <span class="pill">PostgreSQL</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="formacion">
+    <h2>Formación</h2>
+    <div class="edu-item">
+      <span class="what">Ingeniería de Sistemas — Universidad Libre, Cali</span>
+      <span class="when">2022 – 2026</span>
+    </div>
+    <div class="edu-item">
+      <span class="what">Bootcamp de Inteligencia Artificial — MinTIC</span>
+      <span class="when">159 h</span>
+    </div>
+    <div class="edu-item">
+      <span class="what">Cisco Networking Academy — redes y ciberseguridad</span>
+      <span class="when"></span>
+    </div>
+  </section>
+
+  <footer>
+    Cali, Colombia · <a href="mailto:angelf-agredav@unilibre.edu.co">angelf-agredav@unilibre.edu.co</a>
+    · <a href="https://github.com/angelfvargas">github.com/angelfvargas</a>
+  </footer>
+</div>
+
+</body>
+</html>
