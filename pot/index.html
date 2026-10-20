@@ -31,7 +31,7 @@ p { margin: 0 0 12px; max-width: 65ch; }
 .boton { display: inline-block; margin: 8px 8px 0 0; background: var(--acento); color: var(--papel); text-decoration: none;
   font-weight: 600; padding: 12px 20px; }
 .boton:focus-visible, a:focus-visible { outline: 3px solid var(--alerta); outline-offset: 3px; }
-.cifras { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1px; background: var(--linea); border: 1px solid var(--linea); }
+.cifras { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: var(--linea); border: 1px solid var(--linea); }
 .cifra { background: var(--superficie); padding: 18px; display: grid; gap: 4px; align-content: start; }
 .cifra b { font: 500 30px/1.1 var(--display); font-variant-numeric: tabular-nums; }
 .cifra span { font-size: 15px; color: var(--suave); }
@@ -44,6 +44,7 @@ figure img { width: 100%; height: auto; background: #fff; border: 1px solid var(
 figcaption { font-size: 14px; color: var(--suave); }
 .mapas { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
 a { color: var(--acento); }
+@media (max-width: 520px) { .cifras { grid-template-columns: 1fr; } }
 footer { font-size: 14px; color: var(--suave); border-top: 1px solid var(--linea); padding-top: 18px; }
 </style>
 </head>
