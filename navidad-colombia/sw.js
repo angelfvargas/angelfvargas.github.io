@@ -1,6 +1,6 @@
 // Service worker: guarda todo el sitio en el celular para que funcione sin internet.
-const VERSION = 'novena-73b60ecbc64d';
-const ARCHIVOS = ["./","./assets/index-Bj6bqava.css","./assets/index-C7-18MAI.js","./iconos/icono-192.png","./iconos/icono-512.png","./iconos/icono.svg","./index.html","./manifest.webmanifest"];
+const VERSION = 'novena-1c0f074cb55c';
+const ARCHIVOS = ["./","./assets/fraunces-latin-full-normal-CFFu7zhK.woff2","./assets/index-B9NGAE26.js","./assets/index-BqEO3MXY.css","./assets/literata-latin-wght-italic-Bm_GJfSc.woff2","./assets/literata-latin-wght-normal-DLxlUchJ.woff2","./assets/nunito-latin-wght-normal-BzFMHfZw.woff2","./iconos/icono-192.png","./iconos/icono-512.png","./iconos/icono.svg","./index.html","./manifest.webmanifest"];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(VERSION).then((c) => c.addAll(ARCHIVOS)).then(() => self.skipWaiting()));
@@ -17,15 +17,23 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   const req = e.request;
   if (req.method !== 'GET' || new URL(req.url).origin !== location.origin) return;
-  e.respondWith(
-    caches.match(req, { ignoreSearch: true, ignoreVary: true }).then((r) => {
-      if (r) return r;
-      return fetch(req)
+  // HTML: primero la red (para ver siempre la versión nueva) y, sin internet, la copia guardada.
+  if (req.mode === 'navigate') {
+    e.respondWith(
+      fetch(req)
         .then((resp) => {
-          if (resp.ok) caches.open(VERSION).then((c) => c.put(req, resp.clone()));
+          if (resp.ok) { const copia = resp.clone(); caches.open(VERSION).then((c) => c.put('./', copia)); }
           return resp;
         })
-        .catch(() => (req.mode === 'navigate' ? caches.match('./', { ignoreVary: true }) : Response.error()));
-    }),
+        .catch(() => caches.match('./', { ignoreVary: true })),
+    );
+    return;
+  }
+  // Lo demás (JS, CSS, fuentes, íconos con nombre único): primero la caché.
+  e.respondWith(
+    caches.match(req, { ignoreSearch: true, ignoreVary: true }).then((r) => r || fetch(req).then((resp) => {
+      if (resp.ok) { const copia = resp.clone(); caches.open(VERSION).then((c) => c.put(req, copia)); }
+      return resp;
+    })),
   );
 });
