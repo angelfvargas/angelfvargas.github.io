@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Su farol — Novena de Aguinaldos</title>
+<meta name="theme-color" content="#030305">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Big+Shoulders+Stencil+Display:wght@800&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--crema:#F3E8D4;--crema-2:rgba(243,232,212,.62);--oro:#F2B84B;--linea:rgba(243,232,212,.16);
+  --fell:"IM Fell English",Georgia,serif;--ui:"Hanken Grotesk",system-ui,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#030305;color:var(--crema);font:400 15px/1.5 var(--ui);-webkit-font-smoothing:antialiased;overflow:hidden}
+button,input{font:inherit;color:inherit;background:none;border:0}
+button{cursor:pointer}
+:focus-visible{outline:1.5px solid var(--oro);outline-offset:4px}
+#lienzo{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+#lienzo:active{cursor:grabbing}
+
+.marca{position:fixed;top:24px;left:32px;font:italic 400 17px/1 var(--fell);z-index:5}
+.marca span{color:var(--crema-2)}
+.titulo{position:fixed;left:32px;bottom:64px;z-index:5;max-width:560px;pointer-events:none}
+.titulo h1{font:400 clamp(52px,7vw,112px)/.88 var(--fell);letter-spacing:-.025em;text-shadow:0 2px 50px rgba(0,0,0,.8)}
+.titulo h1 em{display:block;color:var(--oro);padding-left:.5em}
+.titulo p{margin-top:20px;max-width:41ch;color:var(--crema-2);line-height:1.55;text-shadow:0 1px 20px rgba(0,0,0,1)}
+
+.panel{position:fixed;right:32px;top:50%;transform:translateY(-50%);width:296px;z-index:6;
+  background:rgba(5,5,8,.42);backdrop-filter:blur(14px) saturate(1.2);-webkit-backdrop-filter:blur(14px) saturate(1.2);border:1px solid var(--linea);padding:4px 22px 18px}
+.campo{padding:15px 0;border-bottom:1px solid var(--linea)}
+.campo>span,.campo label{display:flex;justify-content:space-between;font-size:12px;color:var(--crema-2);margin-bottom:9px}
+.campo i{font-style:normal;color:var(--oro);font-variant-numeric:tabular-nums}
+#nombre{width:100%;font:italic 400 27px/1.1 var(--fell);padding:2px 0 6px;border-bottom:1px solid rgba(243,232,212,.4)}
+#nombre:focus{outline:none;border-bottom-color:var(--oro)}
+.opc{display:flex;gap:4px 16px;flex-wrap:wrap}
+.opc button{padding:5px 0;min-height:34px;color:var(--crema-2);position:relative;font-size:14.5px}
+.opc button[aria-pressed="true"]{color:var(--crema)}
+.opc button[aria-pressed="true"]::after{content:"";position:absolute;left:0;right:0;bottom:4px;height:1px;background:var(--oro)}
+.acciones{display:grid;gap:8px;padding-top:16px}
+.acciones button{height:46px;border:1px solid rgba(243,232,212,.4);display:flex;align-items:center;justify-content:space-between;padding:0 14px;font-size:14px;transition:background .3s,color .3s}
+.acciones button:hover{background:var(--crema);color:#120d08}
+.acciones .fuerte{background:var(--oro);border-color:var(--oro);color:#1a1006;font-weight:600}
+.acciones .fuerte:hover{background:#ffd27a}
+.aviso{min-height:18px;margin-top:10px;font-size:12px;color:var(--oro)}
+
+.tecnica{position:fixed;left:32px;right:360px;bottom:22px;z-index:5;font:400 11.5px/1.4 var(--ui);color:rgba(243,232,212,.42);font-variant-numeric:tabular-nums;letter-spacing:.01em}
+.tecnica b{color:rgba(243,232,212,.7);font-weight:500}
+.sin{position:fixed;inset:0;display:none;place-items:center;text-align:center;padding:30px;z-index:30;font:italic 22px var(--fell);background:rgba(3,3,5,.94)}
+.sin button{display:block;margin:20px auto 0;font:500 14px var(--ui);border:1px solid var(--oro);color:var(--oro);padding:12px 20px}
+/* Cuando la imagen está quieta (aparato lento o nadie la toca), la vela titila con CSS:
+   lo hace el compositor del navegador, la tarjeta de video no trabaja. */
+#titileo{position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;z-index:1}
+body.reposo #titileo{animation:titileo 2.7s linear infinite}
+@keyframes titileo{0%{opacity:0}9%{opacity:.05}17%{opacity:.015}29%{opacity:.07}41%{opacity:.02}55%{opacity:.06}63%{opacity:.01}78%{opacity:.045}90%{opacity:.02}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){body.reposo #titileo{animation:none}}
+/* En aparatos lentos el desenfoque del panel (que se recalcula en cada cuadro) se quita. */
+body.ligero .panel{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(5,5,8,.86)}
+
+@media (max-width:820px){
+  .marca{left:20px;top:calc(18px + env(safe-area-inset-top))}
+  .titulo{top:calc(52px + env(safe-area-inset-top));bottom:auto;left:20px;right:20px}
+  .titulo h1{font-size:44px}.titulo p{display:none}
+  .panel{top:auto;bottom:0;right:0;left:0;transform:none;width:auto;max-height:44svh;overflow-y:auto;padding:2px 20px calc(16px + env(safe-area-inset-bottom));border-width:1px 0 0}
+  .tecnica{display:none}
+}
+</style>
+</head>
+<body>
+<canvas id="lienzo" aria-label="Su farol encendido en una sala oscura; la luz de la vela atraviesa los calados y el vitral y dibuja su nombre en la pared. Arrastre para mirar alrededor."></canvas>
+<div id="titileo" aria-hidden="true"></div>
+<div class="marca">Novena de Aguinaldos <span>· Su farol</span></div>
+<div class="titulo">
+  <h1>Ningún farol<em>es como este.</em></h1>
+  <p>Se construye a partir de su nombre: la forma, cada calado y el vitral de adentro. La vela lo enciende y la luz escribe su nombre en la pared. Existe una sola vez.</p>
+</div>
+
+<aside class="panel" aria-label="Su farol">
+  <div class="campo"><label for="nombre">Nombre <i id="largo"></i></label><input id="nombre" maxlength="16" value="Familia Ramírez" autocomplete="off" spellcheck="false"></div>
+  <div class="campo"><span>Forma <i id="caras"></i></span><div class="opc" id="forma"></div></div>
+  <div class="campo"><span>Vitral de adentro</span><div class="opc" id="paleta"></div></div>
+  <div class="acciones">
+    <button id="otra">Otra variación <span aria-hidden="true">↻</span></button>
+    <button id="compartir" class="fuerte">Compartir mi farol <span aria-hidden="true">→</span></button>
+  </div>
+  <p class="aviso" id="aviso" role="status"></p>
+</aside>
+<p class="tecnica" id="tecnica"></p>
+<div class="sin" id="sin"><div>Su farol necesita un navegador más reciente.<br>Pruebe con Chrome o Safari actualizados.</div></div>
+
+<script>
+/* =====================================================================
+   SU FAROL — trazado de rayos en tiempo real, sin librerías.
+   El farol es un poliedro convexo (planos), con calados generados por
+   su nombre; adentro gira un vitral; la luz de la vela se calcula rayo
+   por rayo hasta la pared, el techo, el piso y el aire de la sala.
+   ===================================================================== */
+const PI=Math.PI;
+const reducido=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const QUIETO=new URLSearchParams(location.search).has('quieto');
+
+/* ---------- azar con semilla ---------- */
+function hash(s){let h=2166136261;for(const c of s){h^=c.codePointAt(0);h=Math.imul(h,16777619)}return h>>>0}
+function azar(seed){let a=seed>>>0;return()=>{a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+
+/* ---------- las formas: listas de planos [nx,ny,nz,d] ---------- */
+const norm=v=>{const l=Math.hypot(v[0],v[1],v[2]);return [v[0]/l,v[1]/l,v[2]/l]};
+function anillo(n,beta,d,y,fase=0){const out=[];for(let k=0;k<n;k++){const a=fase+k*2*PI/n;out.push([Math.sin(a)*Math.sin(beta),y*Math.cos(beta),Math.cos(a)*Math.sin(beta),d])}return out}
+const FORMAS={
+  farol:{n:'Farol',p:()=>[...anillo(6,PI/2,.6,0,PI/6),...anillo(6,50*PI/180,.6,1,PI/6),...anillo(6,50*PI/180,.6,-1,PI/6),[0,1,0,.8],[0,-1,0,.74]]},
+  lucero:{n:'Lucero',p:()=>[...anillo(8,PI/2,.6,0,PI/8),...anillo(8,56*PI/180,.6,1,PI/8),...anillo(8,56*PI/180,.6,-1,PI/8),[0,1,0,.86],[0,-1,0,.8]]},
+  rombo:{n:'Rombo',p:()=>{const o=[];for(const [a,b,c] of [[1,1,0],[1,-1,0],[-1,1,0],[-1,-1,0],[1,0,1],[1,0,-1],[-1,0,1],[-1,0,-1],[0,1,1],[0,1,-1],[0,-1,1],[0,-1,-1]]){const n=norm([a,b,c]);o.push([...n,.66])}return o}},
+  cristal:{n:'Cristal',p:()=>{const o=[];for(const s of [[1,1,1],[1,1,-1],[1,-1,1],[1,-1,-1],[-1,1,1],[-1,1,-1],[-1,-1,1],[-1,-1,-1]]) o.push([...norm(s),.64]);
+    for(const s of [[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]]) o.push([...s,.74]);return o}},
+  gema:{n:'Gema',p:()=>{const f=(1+Math.sqrt(5))/2,g=1/f,o=[];
+    for(const a of [1,-1])for(const b of [1,-1])for(const c of [1,-1]) o.push([...norm([a,b,c]),.66]);
+    for(const a of [1,-1])for(const b of [1,-1]){o.push([...norm([0,a*g,b*f]),.66]);o.push([...norm([a*g,b*f,0]),.66]);o.push([...norm([a*f,0,b*g]),.66])}return o}},
+};
+const PALETAS={
+  quimbaya:{n:'Quimbaya',c:['#ff3b30','#ffcc00','#2fd36b','#1f8bff','#ff2d92']},
+  velitas:{n:'Velitas',c:['#ffb347','#ff8c1a','#ffd27a','#ff6a3d','#ffe9b0']},
+  pesebre:{n:'Pesebre',c:['#d4202a','#1f8a42','#f0c02a','#f7f1e3','#9c1c1c']},
+  noche:{n:'Noche',c:['#2b5cff','#7a3cff','#00b3a4','#c9d6ff','#3d2bd1']},
+};
+const lin=h=>{const v=parseInt(h.slice(1),16);return [(v>>16)/255,(v>>8&255)/255,(v&255)/255].map(c=>Math.pow(c,2.2))};
+
+/* ---------- geometría de cada cara: centro e inradio ---------- */
+function resolver(a,b,c){
+  const det=a[0]*(b[1]*c[2]-b[2]*c[1])-a[1]*(b[0]*c[2]-b[2]*c[0])+a[2]*(b[0]*c[1]-b[1]*c[0]);
+  if(Math.abs(det)<1e-9) return null;
+  const dx=a[3]*(b[1]*c[2]-b[2]*c[1])-a[1]*(b[3]*c[2]-b[2]*c[3])+a[2]*(b[3]*c[1]-b[1]*c[3]);
+  const dy=a[0]*(b[3]*c[2]-b[2]*c[3])-a[3]*(b[0]*c[2]-b[2]*c[0])+a[2]*(b[0]*c[3]-b[3]*c[0]);
+  const dz=a[0]*(b[1]*c[3]-b[3]*c[1])-a[1]*(b[0]*c[3]-b[3]*c[0])+a[3]*(b[0]*c[1]-b[1]*c[0]);
+  return [dx/det,dy/det,dz/det];
+}
+const dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+function geometria(P){
+  const N=P.length,cen=[],rad=[];let vertices=new Set(), radio=0;
+  for(let i=0;i<N;i++){
+    const vs=[];
+    for(let j=0;j<N;j++)for(let k=j+1;k<N;k++){if(j===i||k===i)continue;const p=resolver(P[i],P[j],P[k]);if(!p)continue;
+      if(P.every(q=>dot(q,p)<=q[3]+1e-5)){vs.push(p);vertices.add(p.map(x=>x.toFixed(4)).join());radio=Math.max(radio,Math.hypot(...p))}}
+    const c=[0,1,2].map(a=>vs.reduce((s,v)=>s+v[a],0)/Math.max(vs.length,1));
+    let r=1e9;
+    for(let j=0;j<N;j++){if(j===i)continue;if(!vs.some(v=>Math.abs(dot(P[j],v)-P[j][3])<1e-4))continue;
+      const cs=dot(P[i],P[j]),s=Math.sqrt(Math.max(1-cs*cs,1e-6));r=Math.min(r,(P[j][3]-dot(P[j],c))/s)}
+    cen.push(c);rad.push(Math.max(r,.02));
+  }
+  return {cen,rad,vertices:vertices.size,radio};
+}
+
+/* ---------- parámetros generados por el nombre ---------- */
+const estado={nombre:'Familia Ramírez',variacion:0,forma:null,paleta:'quimbaya'};
+function generar(){
+  const r=azar(hash(estado.nombre.trim().toLowerCase()+'#'+estado.variacion));
+  const claves=Object.keys(FORMAS);
+  const forma=estado.forma||claves[Math.floor(r()*claves.length)];
+  const grupos=[];
+  for(let g=0;g<3;g++){
+    const n=[5,6,7,8,9,10,12][Math.floor(r()*7)];
+    grupos.push({A:[n,.15+r()*.11,.41+r()*.09,r()],B:[n*(r()<.5?2:3),.02+r()*.012,.64+r()*.06,0]});
+  }
+  return {forma,grupos,semilla:r()*100,rotDir:r()<.5?-1:1};
+}
+
+/* ======================= WebGL 2 ======================= */
+const lienzo=document.getElementById('lienzo');
+const gl=lienzo.getContext('webgl2',{antialias:false,alpha:false,depth:false,stencil:false,powerPreference:'default',preserveDrawingBuffer:QUIETO});
+if(!gl){document.getElementById('sin').style.display='grid';throw new Error('sin webgl2')}
+const flotante=!!gl.getExtension('EXT_color_buffer_float');
+const paralelo=gl.getExtension('KHR_parallel_shader_compile');       // compilar sin congelar la página
+const cronometro=gl.getExtension('EXT_disjoint_timer_query_webgl2'); // cuánto tarda de verdad la tarjeta de video
+let tarjeta='';try{const e=gl.getExtension('WEBGL_debug_renderer_info');tarjeta=String(gl.getParameter(e?e.UNMASKED_RENDERER_WEBGL:gl.RENDERER))}catch(e){}
+const software=/swiftshader|llvmpipe|softpipe|software|basic render/i.test(tarjeta);  // sin tarjeta de video: todo lo hace el procesador
+
+const VERT=`#version 300 es
+in vec2 a; void main(){gl_Position=vec4(a,0.,1.);}`;
+
+const ESCENA=`#version 300 es
+precision highp float; precision highp int;
+out vec4 fragColor;
+uniform vec2 uRes; uniform float uTime; uniform int uFrame; uniform int uPasos; uniform float uAlpha;
+uniform int uModo;   // 0: superficies nítidas · 1: niebla iluminada (se calcula aparte, en baja resolución: es borrosa)
+uniform vec3 uCam; uniform mat3 uRot; uniform float uFov;
+uniform vec4 uPl[26]; uniform vec3 uCen[26]; uniform float uRad[26]; uniform int uNP;
+uniform vec4 uGA[3]; uniform vec4 uGB[3];
+uniform vec3 uPal[5]; uniform float uSem; uniform float uGiro; uniform float uI; uniform vec3 uFl;
+uniform sampler2D uTexto; uniform sampler2D uPrev;
+uniform sampler2D uGobo; uniform sampler2D uVit; uniform int uMuestras;
+uniform highp sampler3D uRuido; uniform float uRadio;   // ruido 3D precalculado para la niebla · radio de la esfera que envuelve el farol
+const float PI=3.14159265;
+const vec3 C=vec3(0.,2.55,0.);
+const float RI=.36, HI=.40;
+const vec3 SALA=vec3(4.6,4.6,4.6);
+const vec3 OL=vec3(0.,-.1,0.);   // la llama, en coordenadas del farol: desde aquí se calcula la plantilla de luz
+
+float h1(float n){return fract(sin(n)*43758.5453);}
+vec2 h22(vec2 p){p=vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3)));return fract(sin(p)*43758.5453);}
+float h21(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}
+float vn(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h21(i),h21(i+vec2(1,0)),f.x),mix(h21(i+vec2(0,1)),h21(i+vec2(1,1)),f.x),f.y);}
+float vn3(vec3 p){return textureLod(uRuido,p*(1./32.),0.).r*.6+textureLod(uRuido,(p.zxy*1.3+vec3(7.1,3.7,1.3))*(1./32.),0.).r*.4;}
+
+/* ---- rayo contra el poliedro convexo (coordenadas del farol) ---- */
+bool convexo(vec3 o,vec3 d,out float tN,out float tF,out int iN,out int iF){
+  tN=-1e9;tF=1e9;iN=-1;iF=-1;
+  for(int i=0;i<26;i++){ if(i>=uNP) break;
+    vec3 n=uPl[i].xyz; float dn=dot(n,d), ds=uPl[i].w-dot(n,o);
+    if(abs(dn)<1e-6){ if(ds<0.) return false; continue; }
+    float t=ds/dn;
+    if(dn<0.){ if(t>tN){tN=t;iN=i;} } else { if(t<tF){tF=t;iF=i;} }
+  }
+  return tN<=tF && tF>0.;
+}
+float bordeDist(vec3 p,int i){ vec3 ni=uPl[i].xyz; float e=1e9;
+  for(int j=0;j<26;j++){ if(j>=uNP) break; if(j==i) continue;
+    vec3 nj=uPl[j].xyz; float c=dot(ni,nj); float s=sqrt(max(1.-c*c,1e-4));
+    e=min(e,(uPl[j].w-dot(nj,p))/s); }
+  return e; }
+
+/* ---- el calado: 0 bronce, 3 tinta, 1 papel, 2 recorte ---- */
+float calado(vec3 p,int i,bool conBorde,out float tipo){
+  vec3 n=uPl[i].xyz;
+  if(abs(n.y)<.55 && abs(p.y)<.105){                       // banda del nombre: un aro continuo, sin varillas que corten las letras
+    if(abs(p.y)>.086){tipo=0.;return 0.;}
+    float phi=atan(p.x,p.z);
+    float m=texture(uTexto,vec2(phi/(2.*PI)+.5,(p.y+.086)/.172)).r;
+    tipo=m>.5?2.:3.; return m>.5?1.:0.;
+  }
+  if(conBorde){ float e=bordeDist(p,i);
+    if(e<.022){tipo=0.;return 0.;}
+    if(e<.034){tipo=3.;return 0.;} }
+  int g=n.y>.55?0:(n.y<-.55?1:2);
+  vec4 A=uGA[g], B=uGB[g];
+  vec3 up=abs(n.y)>.9?vec3(1,0,0):vec3(0,1,0);
+  vec3 t1=normalize(cross(up,n)), t2=cross(n,t1);
+  vec3 c=uCen[i];
+  vec2 q=vec2(dot(p-c,t1),dot(p-c,t2))/uRad[i];
+  float r=length(q), a=atan(q.y,q.x)+PI*.5;
+  float seg=2.*PI/A.x, pa=mod(a+seg*.5,seg)-seg*.5;
+  bool hueco=false, tinta=false;
+  // 1. estrella central con ojo
+  float rs=mix(A.y*.42,A.y,pow(1.-abs(pa)/(seg*.5),1.8));
+  if(r<rs) hueco=true;
+  if(r<A.y*.24) hueco=false;
+  if(r<A.y*.1) hueco=true;
+  // 2. ranuras finas que salen de la estrella
+  if(abs(r*sin(pa))<.0065 && r>A.y+.07 && r<A.z-.11) hueco=true;
+  // 3. corona de pétalos y gotas desfasadas
+  vec2 v=vec2(r*cos(pa)-A.z,r*sin(pa));
+  if(length(v/vec2(.085+.03*A.w,.03+.012*A.w))<1.) hueco=true;
+  float pb=mod(a,seg)-seg*.5;
+  vec2 v2=vec2(r*cos(pb)-A.z-.01,r*sin(pb));
+  if(length(v2/vec2(.038,.016))<1.) hueco=true;
+  // 4. anillo de puntos y anillo exterior de puntitos
+  float sd=2.*PI/B.x, pd=mod(a+sd*.5,sd)-sd*.5;
+  if(length(vec2(r*cos(pd)-B.z,r*sin(pd)))<B.y) hueco=true;
+  float se=sd*.5, pe=mod(a,se)-se*.5;
+  if(length(vec2(r*cos(pe)-.83,r*sin(pe)))<.014) hueco=true;
+  // filetes de tinta
+  if(abs(r-A.y-.055)<.006 || abs(r-A.z-.075)<.005 || abs(r-B.z-B.y-.035)<.005 || abs(r-.9)<.007) tinta=true;
+  if(r>.94) hueco=false;
+  if(tinta && !hueco){tipo=3.;return 0.;}
+  if(hueco){tipo=2.;return 1.;}
+  tipo=1.; return .028;
+}
+
+/* ---- el vitral que gira adentro (celdas de Voronoi con plomo) ---- */
+vec3 vitral(vec3 p,out float plomo){
+  float phi=atan(p.x,p.z)+uGiro, K=9.;
+  vec2 uv=vec2(phi/(2.*PI)*K, p.y/(2.*PI*RI/K)*1.1);
+  vec2 ip=floor(uv), fp=fract(uv); float d1=9.,d2=9.; vec2 mejor=vec2(0);
+  for(int y=-1;y<=1;y++)for(int x=-1;x<=1;x++){
+    vec2 g=vec2(x,y), cel=ip+g, cw=vec2(mod(cel.x,K),cel.y);
+    vec2 r=g+h22(cw+uSem)-fp; float d=dot(r,r);
+    if(d<d1){d2=d1;d1=d;mejor=cw;} else if(d<d2) d2=d;
+  }
+  plomo=smoothstep(.07,.03,sqrt(d2)-sqrt(d1));
+  int k=int(floor(h21(mejor+uSem*.37)*5.));
+  return uPal[k];
+}
+
+/* ---- luz de la vela que llega a un punto P (mundo), ya filtrada ----
+   Lo que deja pasar el farol depende solo de la dirección desde la llama, así que
+   se calcula UNA vez por farol (como el "gobo" de un reflector de teatro) y aquí
+   solo se consulta: dos lecturas de textura en vez de recorrer todo el farol. */
+vec4 vitralT(vec3 q){ return textureLod(uVit,vec2(atan(q.x,q.z)/(2.*PI)+.5+uGiro/(2.*PI),(q.y+HI)/(2.*HI)),0.); }
+vec3 luz(vec3 P,bool fuera,out float dist,out vec3 dir){
+  vec3 dv=P-C-OL; dist=length(dv); vec3 d=dv/dist; dir=d;
+  vec3 col=vec3(1.,.82,.58);
+  float ts=RI/max(length(d.xz),1e-5), tc=d.y>0.?(HI-OL.y)/d.y:(-HI-OL.y)/d.y;
+  if(ts<tc && ts<dist){ vec3 q=OL+d*ts;
+    if(q.y>-.105 && q.y<.03) col*=1.25;
+    else { vec4 v=vitralT(q); col*=(v.rgb*.82+vec3(1.,.85,.6)*(.18*v.a))*1.6; } }
+  if(fuera){ float g=textureLod(uGobo,vec2(atan(d.x,d.z)/(2.*PI)+.5,acos(clamp(d.y,-1.,1.))/PI),0.).r; col*=g*g; }
+  return col;
+}
+
+/* ---- la sala: baldosa de barro, cal con zócalo, techo de vigas ---- */
+void sala(vec3 o,vec3 d,out float t,out vec3 n,out int s){
+  vec3 tt=(sign(d)*SALA*vec3(1,0,1)+vec3(0,d.y>0.?SALA.y:0.,0)-o)/d;
+  t=tt.x; n=vec3(-sign(d.x),0,0); s=1;
+  if(tt.z<t){t=tt.z;n=vec3(0,0,-sign(d.z));s=1;}
+  if(tt.y<t){t=tt.y;n=vec3(0,-sign(d.y),0);s=d.y>0.?2:0;}
+}
+vec3 albedo(vec3 P,int s,vec3 n){
+  if(s==0){ vec2 q=P.xz/.55; vec2 f=fract(q); float j=smoothstep(0.,.04,f.x)*smoothstep(1.,.96,f.x)*smoothstep(0.,.04,f.y)*smoothstep(1.,.96,f.y);
+    float v=h21(floor(q))*.35+vn(P.xz*3.)*.3+vn(P.xz*14.)*.15;
+    return mix(vec3(.05,.03,.02),vec3(.42,.17,.09)*(.6+v),j); }
+  if(s==2){ float x=abs(n.x)>.5?P.z:P.x; float viga=step(.62,fract(P.x/1.3));
+    return mix(vec3(.16,.13,.10),vec3(.07,.04,.025),viga)*(.7+.4*vn(vec2(P.x*.5,P.z*6.))); }
+  vec2 w=abs(n.x)>.5?vec2(P.z,P.y):vec2(P.x,P.y);
+  float cal=.8+.2*vn(w*2.3)+.08*vn(w*19.);
+  vec3 c=vec3(.84,.80,.72)*cal;
+  if(P.y<1.05){ vec2 q=vec2(w.x/.42,(P.y-.06)/.42); vec2 g=abs(fract(q)-.5); float dd=g.x+g.y;
+    vec3 z=vec3(.03,.27,.30); z=mix(z,vec3(.70,.20,.12),step(dd,.33)); z=mix(z,vec3(.90,.66,.22),step(dd,.14));
+    z=mix(z,vec3(.84,.80,.72),step(.92,P.y)*step(P.y,.98)); c=z*cal; }
+  return c;
+}
+
+/* ---- niebla iluminada: rayos de luz en el aire ---- */
+vec3 niebla(vec3 o,vec3 d,float tMax,float jit){
+  float L=min(tMax,10.), dt=L/float(uPasos); vec3 acc=vec3(0.);
+  vec3 F=C+uFl;
+  for(int k=0;k<32;k++){ if(k>=uPasos) break;
+    vec3 s=o+d*(dt*(float(k)+jit));
+    if(length(s-C)<.95) continue;
+    float dist; vec3 dir; vec3 l=luz(s,true,dist,dir);
+    float cs=dot(d,dir), g=.42, ph=(1.-g*g)/pow(1.+g*g-2.*g*cs,1.5)/(4.*PI);
+    float den=.045*(.55+.9*vn3(s*.9+vec3(0.,uTime*.06,uTime*.03)));
+    acc+=l*ph*den/(dist*dist+.25)*dt;
+  }
+  return acc*uI;
+}
+
+void main(){
+  vec2 fc=gl_FragCoord.xy;
+  if(uModo==2){                                  // plantilla de luz: cuánto deja pasar el farol en cada dirección
+    float m=0.; int n=uMuestras;
+    for(int sy=0;sy<2;sy++)for(int sx=0;sx<2;sx++){ if(sx>=n||sy>=n) continue;
+      vec2 t=(fc+(vec2(sx,sy)+.5)/float(n)-.5)/uRes; float phi=(t.x-.5)*2.*PI, th=t.y*PI;
+      vec3 d=vec3(sin(th)*sin(phi),cos(th),sin(th)*cos(phi));
+      float tN,tF; int iN,iF; float c=1.;
+      if(convexo(OL,d,tN,tF,iN,iF) && iF>=0){ float tp; c=calado(OL+d*tF,iF,true,tp); }
+      m+=c; }
+    fragColor=vec4(sqrt(m/float(n*n)),0.,0.,1.); return;
+  }
+  if(uModo==3){                                  // el vitral desenrollado (sin girar: el giro se suma al leerlo)
+    vec2 t=fc/uRes; float phi=(t.x-.5)*2.*PI, pl;
+    vec3 v=vitral(vec3(RI*sin(phi),-HI+t.y*2.*HI,RI*cos(phi)),pl); float a=1.-pl*.92;
+    fragColor=vec4(v*a,a); return;
+  }
+  float ign=fract(52.9829189*fract(dot(fc,vec2(.06711056,.00583715))));
+  float jit=fract(ign+float(uFrame%64)*.61803398);
+  vec2 sub=vec2(h1(float(uFrame%97)*1.31),h1(float(uFrame%89)*2.77))-.5;
+  vec2 uv=(fc+sub-.5*uRes)/uRes.y;
+  vec3 rd=normalize(uRot*vec3(uv*uFov*2.,-1.)), ro=uCam;
+  vec3 col;
+
+  float tR; vec3 nR; int sR; sala(ro,rd,tR,nR,sR);
+  float tN,tF; int iN,iF; vec3 rol=ro-C;
+  float bq=dot(rol,rd), cq=dot(rol,rol)-uRadio*uRadio;              // ¿el rayo pasa cerca del farol? si no, ni se buscan sus caras
+  bool farol=bq*bq-cq>0. && convexo(rol,rd,tN,tF,iN,iF) && tN>0. && iN>=0;
+  // cordel del que cuelga
+  float tc=1e9; { vec2 oc=ro.xz, dc=rd.xz; float a=dot(dc,dc), b=dot(oc,dc), c=dot(oc,oc)-.0001; float h=b*b-a*c;
+    if(h>0.){ float t=(-b-sqrt(h))/a; float y=ro.y+rd.y*t; if(t>0. && y>C.y+.6 && y<SALA.y) tc=t; } }
+  float tHit=tR;
+  if(farol && tN<tHit) tHit=tN;
+  if(tc<tHit) tHit=tc;
+
+  if(uModo==1){ col=niebla(ro,rd,tHit,jit); }
+  else if(tHit==tc){ col=vec3(.02,.015,.01)*uI*.05; }
+  else if(farol && tHit==tN){
+    vec3 Pl=rol+rd*tN; float tp; float tr=calado(Pl,iN,true,tp);
+    vec3 n=uPl[iN].xyz;
+    if(tp<.5){                                   // bronce
+      float fr=pow(1.-max(dot(-rd,n),0.),3.);
+      col=vec3(.30,.19,.07)*(.012*uI)+vec3(.9,.6,.3)*fr*.012*uI;
+    } else if(tp>2.5){                           // tinta sobre el papel
+      col=vec3(.012,.008,.006)*uI*.12;
+    } else {
+      float dist; vec3 dir; vec3 l=luz(Pl+C-n*.004,false,dist,dir);
+      // lo que deja ver el recorte: el vitral iluminado y la llama detrás
+      vec3 dentro=vec3(0.);
+      { vec2 oc=Pl.xz, dc=rd.xz; float a=dot(dc,dc), b=dot(oc,dc), c=dot(oc,oc)-RI*RI; float h=b*b-a*c;
+        float t=h>0.?(-b-sqrt(h))/a:-1.; vec3 q=Pl+rd*t;
+        vec3 tinte=vec3(1.,.8,.55);
+        if(t>0. && abs(q.y)<HI){ tinte=vitralT(q).rgb; dentro=tinte*.9; }
+        float tf=dot(uFl-Pl,rd); float dd=length(Pl+rd*tf-uFl);
+        dentro+=tinte*(exp(-dd*dd*900.)*9.+exp(-dd*9.)*1.2)+vec3(1.,.85,.6)*exp(-dd*dd*4000.)*6.; }
+      if(tp>1.5) col=dentro*uI*.11;
+      else { l=mix(l,vec3(1.,.8,.55)*dot(l,vec3(.333)),.55); col=l*uI*.07/(dist*dist+.05)*.05 + dentro*uI*.002; }   // papel: luz difusa
+    }
+  } else {
+    vec3 P=ro+rd*tR; vec3 alb=albedo(P,sR,nR);
+    float dist; vec3 dir; vec3 l=luz(P,true,dist,dir);
+    float lam=max(dot(nR,-dir),0.);
+    vec3 luz=l*uI*lam/(dist*dist+.02);
+    luz+=vec3(1.,.62,.32)*uI*.0016*(.6+.4*max(dot(nR,normalize(C-P)),0.));   // rebote cálido
+    luz+=vec3(.005,.007,.014);                                             // luna por alguna rendija
+    col=alb*luz;
+  }
+  vec3 prev=texture(uPrev,gl_FragCoord.xy/uRes).rgb;
+  fragColor=vec4(mix(prev,col,uAlpha),1.);
+}`;
+
+const FINAL=`#version 300 es
+precision highp float; out vec4 fragColor;
+uniform sampler2D uAcc; uniform sampler2D uNie; uniform vec2 uRes; uniform float uTime; uniform float uExpo;
+vec3 escena(vec2 p){return texture(uAcc,p).rgb+texture(uNie,p).rgb;}
+// Catmull-Rom con 5 lecturas: al agrandar la imagen queda más definida que con el filtro lineal
+vec3 bicubico(sampler2D t,vec2 uv){
+  vec2 ts=vec2(textureSize(t,0)), sp=uv*ts, tp=floor(sp-.5)+.5, f=sp-tp;
+  vec2 w0=f*(-.5+f*(1.-.5*f)), w1=1.+f*f*(-2.5+1.5*f), w2=f*(.5+f*(2.-1.5*f)), w3=f*f*(-.5+.5*f);
+  vec2 w12=w1+w2, t0=(tp-1.)/ts, t3=(tp+2.)/ts, t12=(tp+w2/w12)/ts;
+  vec3 r=texture(t,vec2(t12.x,t0.y)).rgb*(w12.x*w0.y)+texture(t,vec2(t0.x,t12.y)).rgb*(w0.x*w12.y)
+        +texture(t,t12).rgb*(w12.x*w12.y)+texture(t,vec2(t3.x,t12.y)).rgb*(w3.x*w12.y)+texture(t,vec2(t12.x,t3.y)).rgb*(w12.x*w3.y);
+  return max(r/(w12.x*w0.y+w0.x*w12.y+w12.x*w12.y+w3.x*w12.y+w12.x*w3.y),0.);
+}
+vec3 aces(vec3 x){return clamp((x*(2.51*x+.03))/(x*(2.43*x+.59)+.14),0.,1.);}
+float h21(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}
+void main(){
+  vec2 uv=gl_FragCoord.xy/uRes;
+  vec3 c=bicubico(uAcc,uv)+texture(uNie,uv).rgb;
+  vec3 b=vec3(0.); float asp=uRes.y/uRes.x;
+  for(int i=0;i<12;i++){ float a=float(i)*2.39996, r=sqrt(float(i)+.5)/3.46*.05;
+    vec3 s=escena(uv+vec2(cos(a)*asp,sin(a))*r); b+=max(s-.75,0.); }
+  c+=b/12.*.9;
+  c=aces(c*1.1*uExpo);
+  float v=smoothstep(1.25,.35,length((uv-.5)*vec2(1.,asp*1.1)));
+  c*=mix(.55,1.,v);
+  c=pow(c,vec3(1./2.2));
+  c+=(h21(gl_FragCoord.xy+fract(uTime)*91.)-.5)*.035;
+  fragColor=vec4(c,1.);
+}`;
+
+function programa(fs){
+  const p=gl.createProgram();
+  for(const [t,src] of [[gl.VERTEX_SHADER,VERT],[gl.FRAGMENT_SHADER,fs]]){const s=gl.createShader(t);gl.shaderSource(s,src);gl.compileShader(s);gl.attachShader(p,s)}
+  gl.bindAttribLocation(p,0,'a'); gl.linkProgram(p);
+  return p;                                   // si el navegador puede, compila en segundo plano
+}
+function usar(p){
+  if(!gl.getProgramParameter(p,gl.LINK_STATUS)){
+    for(const s of gl.getAttachedShaders(p)) if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)) console.error(gl.getShaderInfoLog(s));
+    console.error(gl.getProgramInfoLog(p)); throw new Error('shader')}
+  const u={}; const n=gl.getProgramParameter(p,gl.ACTIVE_UNIFORMS);
+  for(let i=0;i<n;i++){const info=gl.getActiveUniform(p,i);u[info.name.replace('[0]','')]=gl.getUniformLocation(p,info.name)}
+  return {p,u};
+}
+const prog1=programa(ESCENA), prog2=programa(FINAL); let P1=null, P2=null;
+const compilado=()=>new Promise(ok=>{const ver=()=>{
+  if(!paralelo||(gl.getProgramParameter(prog1,paralelo.COMPLETION_STATUS_KHR)&&gl.getProgramParameter(prog2,paralelo.COMPLETION_STATUS_KHR))) ok(); else setTimeout(ver,40)};ver()});
+const vbo=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,vbo); gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
+gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0,2,gl.FLOAT,false,0,0);
+
+/* ---------- texto del nombre (banda) ---------- */
+const cvT=document.createElement('canvas'); cvT.width=2048; cvT.height=128;
+const texT=gl.createTexture();
+function textoBanda(){
+  const x=cvT.getContext('2d'); x.fillStyle='#000'; x.fillRect(0,0,2048,128);
+  const t=(estado.nombre.trim()||'Su nombre').toUpperCase();
+  x.font='800 100px "Big Shoulders Stencil Display"'; const w=x.measureText(t).width; const s=Math.min(104,100*270/w);
+  x.font=`800 ${s}px "Big Shoulders Stencil Display"`; x.textAlign='center'; x.textBaseline='middle'; x.fillStyle='#fff';
+  x.fillText(t,1024,66);                                      // de frente: se lee derecho en el farol
+  for(const cx of [0,2048]){x.save();x.translate(cx,66);x.scale(-1,1);x.fillText(t,0,0);x.restore()}  // atrás: al revés, para que en la pared se lea derecho
+  gl.bindTexture(gl.TEXTURE_2D,texT); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
+  gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,cvT);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.REPEAT); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+}
+
+/* ---------- calidad: una escalera que se ajusta al aparato ----------
+   Cada escalón: [píxeles de las superficies, píxeles de la niebla, pasos de niebla].
+   La niebla es lo que más cuesta y es borrosa por naturaleza: va en baja resolución,
+   y el farol, los calados y el nombre en la pared van nítidos.
+   Arranca abajo y sube solo si la tarjeta de video termina cada cuadro a tiempo;
+   si se atrasa, baja. Si ni el escalón más bajo alcanza, la imagen se afina quieta. */
+const NIVELES=[[150e3,20e3,10],[220e3,28e3,12],[320e3,40e3,14],[450e3,55e3,16],[620e3,75e3,18],
+  [850e3,100e3,20],[1150e3,130e3,24],[1550e3,180e3,28],[2100e3,250e3,28],[2900e3,340e3,32]];
+const unidades=n=>NIVELES[n][0]*4+NIVELES[n][1]*(NIVELES[n][2]+1);   // costo aproximado (una superficie ≈ 4 pasos de niebla)
+const PARAM=new URLSearchParams(location.search);
+const debil=software||navigator.deviceMemory<=2||navigator.hardwareConcurrency<=4||!!(navigator.connection&&navigator.connection.saveData);
+let nivel=debil?0:(innerWidth<820?1:2), techo=NIVELES.length-1, tBajada=0;
+let modoQuieto=PARAM.has('liviano')||software||reducido;   // imagen quieta que se afina y se detiene
+const pasosAhora=()=>QUIETO?28:(software?8:NIVELES[nivel][2]);
+const NITIDA=software?16:40;   // pasadas para que la imagen quieta quede limpia
+function ajustarCuerpo(){document.body.classList.toggle('ligero',modoQuieto||nivel<=1)}
+
+/* ---------- búferes de acumulación (ida y vuelta), uno por capa ---------- */
+const sup={W:0,H:0,fb:[],tx:[]}, nie={W:0,H:0,fb:[],tx:[]};
+let cual=0, reiniciar=true;
+function capa(c,px,cw,ch){
+  const k=Math.min(1,Math.sqrt(px/(cw*ch))), W2=Math.max(2,Math.round(cw*k)), H2=Math.max(2,Math.round(ch*k));
+  if(W2===c.W&&H2===c.H&&c.fb.length) return false;
+  const nf=[], nt=[];
+  for(let i=0;i<2;i++){const t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);
+    gl.texImage2D(gl.TEXTURE_2D,0,flotante?gl.RGBA16F:gl.RGBA8,W2,H2,0,gl.RGBA,flotante?gl.HALF_FLOAT:gl.UNSIGNED_BYTE,null);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+    const f=gl.createFramebuffer();gl.bindFramebuffer(gl.FRAMEBUFFER,f);gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,t,0);
+    nt.push(t);nf.push(f)}
+  // al cambiar de escalón se copia la imagen que ya había: así no aparece ruido de golpe
+  if(c.fb.length&&!reiniciar){ gl.bindFramebuffer(gl.READ_FRAMEBUFFER,c.fb[1-cual]);
+    for(const f of nf){gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER,f);gl.blitFramebuffer(0,0,c.W,c.H,0,0,W2,H2,gl.COLOR_BUFFER_BIT,gl.LINEAR)}
+    gl.bindFramebuffer(gl.READ_FRAMEBUFFER,null);gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER,null); }
+  else reiniciar=true;
+  c.fb.forEach(f=>gl.deleteFramebuffer(f)); c.tx.forEach(t=>gl.deleteTexture(t)); c.fb=nf; c.tx=nt; c.W=W2; c.H=H2;
+  return true;
+}
+function buferes(){
+  const dpr=Math.min(devicePixelRatio||1,QUIETO?1.5:(nivel<=2?1:nivel<=5?1.25:1.5));
+  const cw=Math.round(innerWidth*dpr), ch=Math.round(innerHeight*dpr);
+  if(lienzo.width!==cw) lienzo.width=cw; if(lienzo.height!==ch) lienzo.height=ch;
+  const [ps,pn]=QUIETO?[cw*ch*.25,cw*ch*.0625]:(software?[40e3,6e3]:NIVELES[nivel]);
+  const a=capa(sup,ps,cw,ch), b=capa(nie,pn,cw,ch);
+  if(a||b) acumulados=0;
+}
+addEventListener('resize',()=>{if(P1){buferes();despertar()}});
+
+/* ---------- cámara en órbita dentro de la sala ---------- */
+const movil=()=>innerWidth<820;
+const cam={az:-.8,el:.04,r:3.75,objetivo:[0,2.42,0],vaz:0,vel:0};
+let arrastre=null, quieto=0;
+lienzo.addEventListener('pointerdown',e=>{arrastre={x:e.clientX,y:e.clientY};lienzo.setPointerCapture(e.pointerId);despertar()});
+lienzo.addEventListener('pointermove',e=>{if(!arrastre)return;cam.vaz=-(e.clientX-arrastre.x)*.004;cam.vel=(e.clientY-arrastre.y)*.003;
+  cam.az+=cam.vaz;cam.el=Math.max(-.25,Math.min(.75,cam.el+cam.vel));arrastre={x:e.clientX,y:e.clientY};quieto=0;ultInteraccion=performance.now()});
+const soltar=()=>{if(!arrastre)return;arrastre=null;ultMov=performance.now();despertar()};
+lienzo.addEventListener('pointerup',soltar); lienzo.addEventListener('pointercancel',soltar);
+lienzo.addEventListener('wheel',e=>{cam.r=Math.max(2.4,Math.min(4.1,cam.r+e.deltaY*.002));e.preventDefault();ultMov=performance.now();despertar()},{passive:false});
+addEventListener('pointerdown',()=>despertar(),{passive:true}); addEventListener('keydown',()=>despertar());
+function matCamara(){
+  const r=movil()?Math.min(cam.r+.3,4.2):cam.r;
+  const p=[cam.objetivo[0]+r*Math.sin(cam.az)*Math.cos(cam.el),cam.objetivo[1]+r*Math.sin(cam.el)+(movil()?.25:0),cam.objetivo[2]+r*Math.cos(cam.az)*Math.cos(cam.el)];
+  const t=movil()?[0,2.1,0]:[cam.objetivo[0]-.62*Math.cos(cam.az),cam.objetivo[1]+.2,cam.objetivo[2]+.62*Math.sin(cam.az)];
+  let f=norm([t[0]-p[0],t[1]-p[1],t[2]-p[2]]); let rr=norm([f[1]*0-f[2]*1,f[2]*0-f[0]*0,f[0]*1-f[1]*0]);
+  const u=[rr[1]*f[2]-rr[2]*f[1],rr[2]*f[0]-rr[0]*f[2],rr[0]*f[1]-rr[1]*f[0]];
+  return {p,m:[rr[0],rr[1],rr[2],u[0],u[1],u[2],-f[0],-f[1],-f[2]]};
+}
+
+/* ---------- plantillas horneadas: la luz que deja pasar el farol ----------
+   gobo: por cada dirección desde la llama, cuánto pasa (calados, bordes, nombre).
+   vitral: el vitral de adentro desenrollado. Se hornean al cambiar el farol. */
+const GOBO=software?[768,384]:[2048,1024], VIT=software?[512,256]:[1024,512];
+function plantilla(w,h,interno,formato){
+  const t=gl.createTexture(); gl.activeTexture(gl.TEXTURE5); gl.bindTexture(gl.TEXTURE_2D,t);
+  gl.texImage2D(gl.TEXTURE_2D,0,interno,w,h,0,formato,gl.UNSIGNED_BYTE,null);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.REPEAT); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+  gl.bindTexture(gl.TEXTURE_2D,null);
+  const f=gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER,f); gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,t,0);
+  gl.bindFramebuffer(gl.FRAMEBUFFER,null);
+  return {t,f,w,h};
+}
+const gobo=plantilla(GOBO[0],GOBO[1],gl.R8,gl.RED), vit=plantilla(VIT[0],VIT[1],gl.RGBA8,gl.RGBA);
+const ruido=gl.createTexture();
+{ const n=32, d=new Uint8Array(n*n*n), r=azar(1225); for(let i=0;i<d.length;i++) d[i]=r()*255;
+  gl.activeTexture(gl.TEXTURE6); gl.bindTexture(gl.TEXTURE_3D,ruido); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);
+  gl.texImage3D(gl.TEXTURE_3D,0,gl.R8,n,n,n,0,gl.RED,gl.UNSIGNED_BYTE,d);
+  for(const [k,v] of [[gl.TEXTURE_MIN_FILTER,gl.LINEAR],[gl.TEXTURE_MAG_FILTER,gl.LINEAR],[gl.TEXTURE_WRAP_S,gl.REPEAT],[gl.TEXTURE_WRAP_T,gl.REPEAT],[gl.TEXTURE_WRAP_R,gl.REPEAT]]) gl.texParameteri(gl.TEXTURE_3D,k,v); }
+function plantillas(){ gl.activeTexture(gl.TEXTURE6); gl.bindTexture(gl.TEXTURE_3D,ruido); gl.uniform1i(P1.u.uRuido,6); gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D,gobo.t); gl.activeTexture(gl.TEXTURE4); gl.bindTexture(gl.TEXTURE_2D,vit.t);
+  gl.uniform1i(P1.u.uGobo,3); gl.uniform1i(P1.u.uVit,4); }
+function hornear(){
+  gl.useProgram(P1.p);
+  for(const u of [0,3,4]){gl.activeTexture(gl.TEXTURE0+u); gl.bindTexture(gl.TEXTURE_2D,null)}   // nada leído y escrito a la vez
+  gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D,texT);
+  // cada lector apunta a su propia unidad (si dos de distinto tipo comparten una, el navegador cancela el dibujo)
+  gl.uniform1i(P1.u.uPrev,0); gl.uniform1i(P1.u.uTexto,1); gl.uniform1i(P1.u.uGobo,3); gl.uniform1i(P1.u.uVit,4); gl.uniform1i(P1.u.uRuido,6);
+  gl.activeTexture(gl.TEXTURE6); gl.bindTexture(gl.TEXTURE_3D,ruido);
+  gl.uniform1f(P1.u.uGiro,0); gl.uniform1i(P1.u.uMuestras,software?1:2);
+  for(const [x,modo] of [[gobo,2],[vit,3]]){
+    gl.bindFramebuffer(gl.FRAMEBUFFER,x.f); gl.viewport(0,0,x.w,x.h); gl.uniform2f(P1.u.uRes,x.w,x.h); gl.uniform1i(P1.u.uModo,modo);
+    gl.drawArrays(gl.TRIANGLES,0,3);
+  }
+  gl.bindFramebuffer(gl.FRAMEBUFFER,null); plantillas();
+  saltar=2; nG=0;            // ese cuadro trae trabajo extra: no cuenta para medir
+}
+
+/* ---------- subir el farol a la GPU ---------- */
+let gen, planos, geo, encendido=0, objetivoLuz=1, cambioPendiente=false;
+function cargar(){
+  gen=generar(); planos=FORMAS[gen.forma].p(); geo=geometria(planos);
+  gl.useProgram(P1.p);
+  const pl=new Float32Array(26*4), ce=new Float32Array(26*3), ra=new Float32Array(26);
+  planos.forEach((q,i)=>{pl.set(q,i*4);ce.set(geo.cen[i],i*3);ra[i]=geo.rad[i]});
+  gl.uniform4fv(P1.u.uPl,pl); gl.uniform3fv(P1.u.uCen,ce); gl.uniform1fv(P1.u.uRad,ra); gl.uniform1i(P1.u.uNP,planos.length);
+  gl.uniform4fv(P1.u.uGA,new Float32Array(gen.grupos.flatMap(g=>g.A))); gl.uniform4fv(P1.u.uGB,new Float32Array(gen.grupos.flatMap(g=>g.B)));
+  gl.uniform3fv(P1.u.uPal,new Float32Array(PALETAS[estado.paleta].c.flatMap(lin)));
+  gl.uniform1f(P1.u.uSem,gen.semilla); gl.uniform1f(P1.u.uRadio,geo.radio*1.02+.01);
+  textoBanda(); hornear(); reiniciar=true; acumulados=0;
+  document.querySelectorAll('#forma button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===gen.forma));
+  document.getElementById('caras').textContent=`${planos.length} caras · ${geo.vertices} vértices`;
+  const extra=(QUIETO?'&quieto':'')+(PARAM.has('liviano')?'&liviano':'');
+  try{ history.replaceState(null,'',`?n=${encodeURIComponent(estado.nombre)}&v=${estado.variacion}${estado.forma?'&f='+estado.forma:''}&p=${estado.paleta}${extra}`); }catch(e){}
+}
+function cambiar(fn){ fn(); if(!P1) return; despertar(); objetivoLuz=0; cambioPendiente=true;
+  if(QUIETO||modoQuieto){cargar();objetivoLuz=1;cambioPendiente=false} }
+
+/* ---------- medir: cuánto tarda de verdad la tarjeta de video ----------
+   Con un "fence" se sabe cuándo terminó el cuadro anterior. Nunca se manda
+   uno nuevo antes: así el trabajo no se amontona y el aparato no se traba. */
+let fence=null, consulta=null, tEnvio=0, latF=0, nF=0, latG=0, nG=0, rapidos=0, lentos=0;
+let descartar=false; document.addEventListener('visibilitychange',()=>{descartar=true});  // al volver a la pestaña, la primera medida no sirve
+let saltar=2;                                 // los primeros cuadros no cuentan (compilación, memoria nueva)
+function cambiarNivel(n){ n=Math.max(0,Math.min(n,NIVELES.length-1)); if(n===nivel) return;
+  nivel=n; rapidos=0; lentos=0; nF=0; nG=0; saltar=1; buferes(); ajustarCuerpo(); }
+function bajar(l,meta,limite){
+  tBajada=performance.now(); lentos=0;
+  // si ni el escalón más bajo alcanzaría, la imagen se afina quieta y la GPU descansa
+  if(!modoQuieto&&l*unidades(0)/unidades(nivel)>limite){ modoQuieto=true; ajustarCuerpo(); }
+  if(nivel===0) return;
+  let n=nivel-1;
+  if(l>meta*3){ const u=unidades(nivel)*meta/l; while(n>0&&unidades(n)>u) n--; }   // muy lento: baja de una vez lo necesario
+  techo=Math.min(techo,nivel-1); cambiarNivel(n);
+}
+function subir(){
+  if(enQuietud||nivel>=NIVELES.length-1) return;
+  if(nivel>=techo){ if(performance.now()-tBajada<20000) return; techo=nivel+1; }   // cada 20 s se puede volver a intentar subir
+  if(++rapidos>=6) cambiarNivel(nivel+1); }
+// un pico suelto (otro programa, el navegador ocupado) no cuenta: tiene que repetirse
+function lento(l,umbral){ if(l<=umbral){lentos=0;return false} return ++lentos>=3||l>umbral*2; }
+function porFence(ms){                       // tiempo hasta enterarnos de que terminó (incluye la espera del navegador)
+  hechos++; if(descartar){descartar=false;return} if(saltar>0){saltar--;return}
+  latF=nF++?latF*.7+ms*.3:ms;
+  const umbral=cronometro?60:45;
+  if(lento(latF,umbral)) return bajar(latF,30,80);
+  if(!cronometro&&latF<=umbral){ if(ms<21) subir(); else rapidos=0; }
+}
+function porReloj(ms){                       // tiempo exacto de la tarjeta de video (si el navegador lo permite)
+  if(nG++===0) return;                       // la primera medida puede ser del escalón anterior
+  latG=nG>2?latG*.7+ms*.3:ms;
+  // meta: ~16 ms de tarjeta de video por cuadro a 30 cuadros/s → le queda la mitad libre al resto del aparato
+  if(lento(latG,24)) return bajar(latG,16,45);
+  if(latG<=24&&latG*unidades(Math.min(nivel+1,NIVELES.length-1))/unidades(nivel)<15) subir(); else rapidos=0;
+}
+
+/* ---------- bucle ---------- */
+let cuadro=0, tA=0, giro=0, ult=performance.now(), acumulados=0, ultMov=0, ultInteraccion=performance.now();
+let ultEnvio=0, corriendo=false, perdido=false, enQuietud=false, hechos=0, ultInforme=performance.now(), fps=0;
+const REPOSO=60000;   // 1 minuto sin tocar nada: la imagen se queda quieta y la tarjeta de video descansa
+function despertar(){ ultInteraccion=performance.now(); if(!QUIETO&&P1&&!corriendo&&!perdido){corriendo=true;requestAnimationFrame(bucle)} }
+function bucle(ahora){
+  if(perdido){corriendo=false;return}
+  if(consulta&&gl.getQueryParameter(consulta,gl.QUERY_RESULT_AVAILABLE)){
+    const ns=gl.getQueryParameter(consulta,gl.QUERY_RESULT), raro=gl.getParameter(cronometro.GPU_DISJOINT_EXT);
+    gl.deleteQuery(consulta); consulta=null; if(!raro&&ns>0) porReloj(ns/1e6);
+  }
+  if(fence){
+    if(gl.getSyncParameter(fence,gl.SYNC_STATUS)!==gl.SIGNALED){requestAnimationFrame(bucle);return}  // todavía trabajando: esperar
+    gl.deleteSync(fence); fence=null; porFence(ahora-tEnvio);
+  }
+  const quieta=modoQuieto||ahora-ultInteraccion>REPOSO;
+  if(quieta!==enQuietud){enQuietud=quieta;acumulados=0;document.body.classList.toggle('reposo',quieta)}
+  const mov=!!arrastre||cambioPendiente||ahora-ultMov<120;
+  if(quieta&&!mov&&acumulados>=NITIDA){corriendo=false;informe(ahora,true);return}   // ya quedó nítida: se detiene
+  if(!quieta&&!mov&&ahora-ultEnvio<29){requestAnimationFrame(bucle);return}      // tope de 30 cuadros por segundo
+  ultEnvio=ahora;
+  dibujar(ahora,quieta,mov);
+  tEnvio=performance.now(); fence=gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE,0); gl.flush();
+  informe(ahora,false);
+  requestAnimationFrame(bucle);
+}
+function dibujar(ahora,quieta,mov){
+  const dt=Math.min((ahora-ult)/1000,.1); ult=ahora;
+  if(!quieta&&!QUIETO) tA+=dt;                // cuando la imagen está quieta, el tiempo de la escena se congela
+  const t=tA, anima=!quieta&&!QUIETO&&!reducido;
+  // la vela se apaga y se vuelve a prender cuando cambia el farol
+  encendido+= (objetivoLuz-encendido)*Math.min(1,dt*(objetivoLuz?2.2:9));
+  if(cambioPendiente && encendido<.03){cargar();objetivoLuz=1;cambioPendiente=false}
+  if(!arrastre && anima){quieto+=dt; if(quieto>1.5) cam.az+=dt*.045*Math.sin(t*.07+1.)}
+  if(anima) giro+=dt*.11*(gen?gen.rotDir:1);
+  const tit=anima?1+.07*Math.sin(t*11.3)+.05*Math.sin(t*6.7+1.3)+.035*Math.sin(t*23.1+.4):1;
+  const cm=matCamara();
+  const midiendo=cronometro&&!consulta&&!QUIETO;
+  if(midiendo){consulta=gl.createQuery();gl.beginQuery(cronometro.TIME_ELAPSED_EXT,consulta)}
+  gl.useProgram(P1.p); plantillas();
+  gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D,texT); gl.uniform1i(P1.u.uTexto,1);
+  gl.uniform1f(P1.u.uTime,t); gl.uniform1i(P1.u.uFrame,cuadro); gl.uniform1i(P1.u.uPasos,pasosAhora());
+  gl.uniform1f(P1.u.uAlpha,reiniciar?1:(QUIETO?1/(cuadro+1):(mov?.6:(quieta?1/(acumulados+3):.28))));
+  gl.uniform3fv(P1.u.uCam,cm.p); gl.uniformMatrix3fv(P1.u.uRot,false,cm.m); gl.uniform1f(P1.u.uFov,Math.tan((movil()?64:50)*PI/360));
+  gl.uniform1f(P1.u.uGiro,giro); gl.uniform1f(P1.u.uI,26*encendido);   // el titileo va aparte (exposición), así no ensucia lo acumulado
+  gl.uniform3f(P1.u.uFl,anima?Math.sin(t*1.7)*.004:0,-.1+(anima?Math.sin(t*2.3)*.003:0),anima?Math.cos(t*1.3)*.004:0);
+  for(const [c,modo] of [[sup,0],[nie,1]]){
+    gl.bindFramebuffer(gl.FRAMEBUFFER,c.fb[cual]); gl.viewport(0,0,c.W,c.H);
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,c.tx[1-cual]); gl.uniform1i(P1.u.uPrev,0);
+    gl.uniform2f(P1.u.uRes,c.W,c.H); gl.uniform1i(P1.u.uModo,modo);
+    gl.drawArrays(gl.TRIANGLES,0,3);
+  }
+  gl.useProgram(P2.p);
+  gl.bindFramebuffer(gl.FRAMEBUFFER,null); gl.viewport(0,0,lienzo.width,lienzo.height);
+  gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,sup.tx[cual]); gl.uniform1i(P2.u.uAcc,0);
+  gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D,nie.tx[cual]); gl.uniform1i(P2.u.uNie,2);
+  gl.uniform2f(P2.u.uRes,lienzo.width,lienzo.height); gl.uniform1f(P2.u.uTime,t); gl.uniform1f(P2.u.uExpo,tit);
+  gl.drawArrays(gl.TRIANGLES,0,3);
+  if(midiendo) gl.endQuery(cronometro.TIME_ELAPSED_EXT);
+  cual=1-cual; cuadro++; reiniciar=false;
+  if(mov) acumulados=0; else acumulados++;
+}
+function informe(ahora,final){
+  if(!final&&ahora-ultInforme<1000) return;
+  if(!final){fps=Math.round(hechos*1000/(ahora-ultInforme)); hechos=0; ultInforme=ahora;}
+  const pasos=pasosAhora(), rayos=sup.W*sup.H*2+nie.W*nie.H*(pasos+1), W=sup.W, H=sup.H;
+  window.__farol={nivel,W,H,niebla:nie.W+'×'+nie.H,pasos,fps,latF:Math.round(latF),latG:Math.round(latG),modoQuieto,quieta:enQuietud,corriendo:!final,tarjeta,cronometro:!!cronometro};
+  document.getElementById('tecnica').innerHTML=
+    `Trazado de rayos en tiempo real, sin librerías · <b>${W}×${H}</b> px + niebla de ${pasos} pasos = <b>${(rayos/1e6).toFixed(1).replace('.',',')} millones de rayos</b> por cuadro · `+
+    (enQuietud?`<b>en reposo</b>: la imagen queda quieta y la tarjeta de video descansa`:`<b>${fps}</b> cuadros por segundo`)+` · forma de ${planos.length} planos generada con su nombre`;
+}
+window.__dibujar=()=>dibujar(performance.now()+16,true,false);
+
+/* ---------- si el aparato se queda sin tarjeta de video ---------- */
+lienzo.addEventListener('webglcontextlost',e=>{e.preventDefault(); perdido=true; corriendo=false;
+  const s=document.getElementById('sin');
+  s.innerHTML='<div>El farol se pausó para no forzar este aparato.<button id="recargar">Verlo en modo liviano</button></div>'; s.style.display='grid';
+  document.getElementById('recargar').onclick=()=>{const u=new URL(location.href);u.searchParams.set('liviano','');location.href=u.href.replace('liviano=','liviano')};
+});
+
+/* ---------- controles ---------- */
+const $=s=>document.querySelector(s);
+$('#forma').innerHTML=Object.entries(FORMAS).map(([k,v])=>`<button data-v="${k}" aria-pressed="false">${v.n}</button>`).join('');
+$('#paleta').innerHTML=Object.entries(PALETAS).map(([k,v])=>`<button data-v="${k}" aria-pressed="${k===estado.paleta}">${v.n}</button>`).join('');
+const nombre=$('#nombre');
+let espera; nombre.addEventListener('input',()=>{$('#largo').textContent=`${nombre.value.length}/16`;clearTimeout(espera);espera=setTimeout(()=>cambiar(()=>{estado.nombre=nombre.value||'Su nombre';estado.forma=null}),450)});
+$('#forma').addEventListener('click',e=>{const b=e.target.closest('button');if(b)cambiar(()=>estado.forma=b.dataset.v)});
+$('#paleta').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;document.querySelectorAll('#paleta button').forEach(x=>x.setAttribute('aria-pressed',x===b));cambiar(()=>estado.paleta=b.dataset.v)});
+$('#otra').onclick=()=>cambiar(()=>{estado.variacion++;estado.forma=null});
+$('#compartir').onclick=async()=>{
+  const url=location.href.replace('&quieto','').replace('&liviano','');
+  try{ if(navigator.share){await navigator.share({title:'Mi farol',text:`El farol de ${estado.nombre} para la noche de velitas`,url});return}
+    await navigator.clipboard.writeText(url); $('#aviso').textContent='Enlace copiado. Péguelo en WhatsApp.'; }
+  catch(e){ $('#aviso').textContent='No se pudo compartir.'; }
+};
+
+/* ---------- arranque: lee el enlace compartido ---------- */
+if(PARAM.get('n')) estado.nombre=PARAM.get('n').slice(0,16);
+if(PARAM.get('v')) estado.variacion=parseInt(PARAM.get('v'))||0;
+if(PARAM.get('f')&&FORMAS[PARAM.get('f')]) estado.forma=PARAM.get('f');
+if(PARAM.get('p')&&PALETAS[PARAM.get('p')]) estado.paleta=PARAM.get('p');
+nombre.value=estado.nombre; $('#largo').textContent=`${nombre.value.length}/16`;
+document.querySelectorAll('#paleta button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.v===estado.paleta));
+// La letra del nombre viene de internet: con mala señal no se espera más de 2,5 s; cuando llegue, se redibuja.
+let fuenteLista=false;
+const fuente=document.fonts.load('800 100px "Big Shoulders Stencil Display"').catch(()=>{}).then(()=>{fuenteLista=true});
+Promise.all([QUIETO?fuente:Promise.race([fuente,new Promise(r=>setTimeout(r,2500))]),compilado()]).then(()=>{
+  P1=usar(prog1); P2=usar(prog2);
+  ajustarCuerpo(); buferes(); cargar(); encendido=QUIETO||modoQuieto?1:0; objetivoLuz=1;
+  if(QUIETO){ window.__listo=true; return; }
+  if(!fuenteLista) fuente.then(()=>{textoBanda();hornear();reiniciar=true;acumulados=0;despertar()});
+  despertar();
+});
+</script>
+</body>
+</html>
